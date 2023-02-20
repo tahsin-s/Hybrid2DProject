@@ -1,0 +1,13 @@
+[gd_scene format=2]
+
+[node name="CamPivot" type="Position3D"]
+transform = Transform( 1, 0, 0, 0, 0.5, 0.866026, 0, -0.866026, 0.5, 0, 0, 0 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.999999, 0, 0, 0, 0.999999, 0, 0.708356, 32.6654 )
+projection = 1
+current = true
+fov = 41.5
+size = 20.0
+near = 0.09
+far = 51.1

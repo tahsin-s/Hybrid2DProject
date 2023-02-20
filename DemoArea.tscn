@@ -1,0 +1,112 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://Player.tscn" type="PackedScene" id=1]
+[ext_resource path="res://sample platform texture.png" type="Texture" id=2]
+[ext_resource path="res://Camera.tscn" type="PackedScene" id=3]
+[ext_resource path="res://DemoCamera.gd" type="Script" id=4]
+
+[sub_resource type="BoxShape" id=1]
+
+[sub_resource type="SpatialMaterial" id=9]
+resource_local_to_scene = true
+albedo_texture = ExtResource( 2 )
+
+[sub_resource type="CubeMesh" id=2]
+material = SubResource( 9 )
+
+[sub_resource type="Skin" id=5]
+
+[sub_resource type="CylinderShape" id=3]
+height = 0.5
+
+[sub_resource type="SpatialMaterial" id=11]
+
+[sub_resource type="CylinderMesh" id=4]
+material = SubResource( 11 )
+height = 0.5
+
+[node name="DemoArea" type="Spatial"]
+
+[node name="Ground" type="StaticBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 11.785 )
+collision_layer = 4
+collision_mask = 0
+
+[node name="Rectangle 1" type="CollisionShape" parent="Ground"]
+transform = Transform( 10, 0, 0, 0, 1, 0, 0, 0, 20, -6.65952, 0, 0 )
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Ground/Rectangle 1"]
+cast_shadow = 0
+mesh = SubResource( 2 )
+skin = SubResource( 5 )
+skeleton = NodePath("../..")
+
+[node name="Rectangle2" type="CollisionShape" parent="Ground"]
+transform = Transform( 10, 0, 0, 0, 1, 0, 0, 0, 30, 15.4387, 0, 0 )
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Ground/Rectangle2"]
+cast_shadow = 0
+mesh = SubResource( 2 )
+skin = SubResource( 5 )
+skeleton = NodePath("../..")
+
+[node name="Rect 3" type="CollisionShape" parent="Ground"]
+transform = Transform( 10, 0, 0, 0, 1, 0, 0, 0, 30, -6.65952, 0, -52.9149 )
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Ground/Rect 3"]
+cast_shadow = 0
+mesh = SubResource( 2 )
+skin = SubResource( 5 )
+skeleton = NodePath("../..")
+
+[node name="Spatial" type="Spatial" parent="Ground"]
+
+[node name="Platforms" type="StaticBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 29.862 )
+collision_layer = 4
+collision_mask = 3
+
+[node name="Cylindrical plat" type="CollisionShape" parent="Platforms"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8176, 2.84584, -27.839 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Platforms/Cylindrical plat"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0764313, 0 )
+mesh = SubResource( 4 )
+
+[node name="Cylindrical plat2" type="CollisionShape" parent="Platforms"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -12.3444, 1.66786, -24.1141 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Platforms/Cylindrical plat2"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0764313, 0 )
+mesh = SubResource( 4 )
+
+[node name="Cylindrical plat3" type="CollisionShape" parent="Platforms"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.176, 1, -34.311 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Platforms/Cylindrical plat3"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0764313, 0 )
+mesh = SubResource( 4 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 6.32158, 0 )
+layers = 0
+light_energy = 0.5
+shadow_enabled = true
+
+[node name="CamPivot2" parent="." instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 0.525769, 0.850628, 0, -0.850628, 0.525769, 0, 0, 0 )
+script = ExtResource( 4 )
+smooth_speed = 8.0
+
+[node name="Player" parent="." instance=ExtResource( 1 )]
+speed = 173
+frict = 15
+STEP_UP_HEIGHT = 0.25
+
+[connection signal="gameplay_exited" from="Player" to="Player" method="_on_Player_gameplay_exited"]
