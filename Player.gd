@@ -95,7 +95,7 @@ func anim(var s: String):
 			anim_state = "attacking" #indicates attacking status
 			aniP.play("attack")
 			pass
-	
+
 func anim_walk():
 	if direction.is_equal_approx(Vector3.ZERO):
 		aniP.play("idle")
@@ -115,7 +115,6 @@ func _on_SpriteAnimation_animation_finished():
 		"attacking":
 			anim_state = "walking"
 			#also end hitbox time
-	
 
 ## Main
 func _ready():
@@ -149,6 +148,3 @@ func _physics_process(delta):
 	
 	if direction != Vector3.ZERO:
 		d_last = direction
-
-
-
