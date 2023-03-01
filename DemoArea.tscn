@@ -1,9 +1,11 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=20 format=2]
 
 [ext_resource path="res://Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://sample platform texture.png" type="Texture" id=2]
 [ext_resource path="res://Camera.tscn" type="PackedScene" id=3]
 [ext_resource path="res://DemoCamera.gd" type="Script" id=4]
+[ext_resource path="res://Assets/starry bg.jpg" type="Texture" id=5]
+[ext_resource path="res://Enemy.tscn" type="PackedScene" id=6]
 
 [sub_resource type="BoxShape" id=1]
 
@@ -24,6 +26,39 @@ height = 0.5
 [sub_resource type="CylinderMesh" id=4]
 material = SubResource( 11 )
 height = 0.5
+
+[sub_resource type="PanoramaSky" id=13]
+radiance_size = 0
+panorama = ExtResource( 5 )
+
+[sub_resource type="Environment" id=12]
+background_mode = 2
+background_sky = SubResource( 13 )
+background_sky_custom_fov = 61.7
+background_sky_orientation = Basis( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1 )
+dof_blur_far_distance = 34.1
+dof_blur_far_transition = 5.67
+dof_blur_far_amount = 0.08
+dof_blur_far_quality = 0
+dof_blur_near_distance = 34.68
+dof_blur_near_transition = 19.72
+dof_blur_near_quality = 0
+glow_intensity = 1.2
+glow_strength = 1.5
+glow_blend_mode = 1
+glow_hdr_scale = 3.3
+
+[sub_resource type="CubeMesh" id=14]
+size = Vector3( 2, 0.5, 2 )
+
+[sub_resource type="ConvexPolygonShape" id=15]
+points = PoolVector3Array( -1, -0.25, -1, -1, 0.25, -1, 1, -0.25, -1, -1, -0.25, 1, -1, 0.25, 1, 1, 0.25, -1, 1, -0.25, 1, 1, 0.25, 1 )
+
+[sub_resource type="ConvexPolygonShape" id=16]
+points = PoolVector3Array( -1, -0.25, -1, -1, 0.25, -1, 1, -0.25, -1, -1, -0.25, 1, -1, 0.25, 1, 1, 0.25, -1, 1, -0.25, 1, 1, 0.25, 1 )
+
+[sub_resource type="ConvexPolygonShape" id=17]
+points = PoolVector3Array( -1, -0.25, -1, -1, 0.25, -1, 1, -0.25, -1, -1, -0.25, 1, -1, 0.25, 1, 1, 0.25, -1, 1, -0.25, 1, 1, 0.25, 1 )
 
 [node name="DemoArea" type="Spatial"]
 
@@ -96,7 +131,8 @@ mesh = SubResource( 4 )
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 6.32158, 0 )
 layers = 0
-light_energy = 0.5
+light_energy = 0.676
+light_specular = 0.517
 shadow_enabled = true
 
 [node name="CamPivot2" parent="." instance=ExtResource( 3 )]
@@ -105,8 +141,38 @@ script = ExtResource( 4 )
 smooth_speed = 8.0
 
 [node name="Player" parent="." instance=ExtResource( 1 )]
-speed = 173
 frict = 15
-STEP_UP_HEIGHT = 0.25
+
+[node name="Enemy" parent="." instance=ExtResource( 6 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.36421, 0.835522, 0 )
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 12 )
+
+[node name="Stairs" type="StaticBody" parent="."]
+
+[node name="MeshInstance" type="MeshInstance" parent="Stairs"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10.214, 0.25, -0.877 )
+mesh = SubResource( 14 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Stairs"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10.214, 0.25, -0.877 )
+shape = SubResource( 15 )
+
+[node name="MeshInstance2" type="MeshInstance" parent="Stairs"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 12.214, 0.75, -0.877 )
+mesh = SubResource( 14 )
+
+[node name="CollisionShape2" type="CollisionShape" parent="Stairs"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 12.214, 0.75, -0.877 )
+shape = SubResource( 16 )
+
+[node name="MeshInstance3" type="MeshInstance" parent="Stairs"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 14.214, 1.25, -0.877 )
+mesh = SubResource( 14 )
+
+[node name="CollisionShape3" type="CollisionShape" parent="Stairs"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 14.214, 1.25, -0.877 )
+shape = SubResource( 17 )
 
 [connection signal="gameplay_exited" from="Player" to="Player" method="_on_Player_gameplay_exited"]

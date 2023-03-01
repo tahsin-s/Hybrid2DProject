@@ -1,8 +1,7 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Player.gd" type="Script" id=1]
 [ext_resource path="res://PlayerAnimation.tscn" type="PackedScene" id=2]
-[ext_resource path="res://Sword_HitBox.gd" type="Script" id=3]
 
 [sub_resource type="CylinderMesh" id=32]
 height = 0.001
@@ -32,17 +31,22 @@ shape = SubResource( 41 )
 [node name="SpriteAnimation" parent="." instance=ExtResource( 2 )]
 transform = Transform( 10, 0, 0, 0, 20, 0, 0, 0, 1, 0, 3.771, 0 )
 
-[node name="Sword_HitBox" type="Area" parent="SpriteAnimation"]
-collision_layer = 8
-collision_mask = 0
-script = ExtResource( 3 )
+[node name="SwordHitbox" type="Area" parent="SpriteAnimation"]
+collision_layer = 0
+collision_mask = 2
 
-[node name="CollisionShape" type="CollisionShape" parent="SpriteAnimation/Sword_HitBox"]
-transform = Transform( 0.1, 0, 0, 0, 0.05, 0, 0, 0, 1, 0.130108, -0.103096, 0 )
+[node name="CollisionShape" type="CollisionShape" parent="SpriteAnimation/SwordHitbox"]
+transform = Transform( 0.1, 0, 0, 0, 0.05, 0, 0, 0, 1, 0.130108, -0.124772, 0 )
 shape = SubResource( 42 )
 
 [node name="DashTimer" type="Timer" parent="."]
 process_mode = 0
+
+[node name="Hearts" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="InvulTimer" type="Timer" parent="."]
 
 [connection signal="animation_finished" from="SpriteAnimation" to="." method="_on_SpriteAnimation_animation_finished"]
 [connection signal="timeout" from="DashTimer" to="." method="_on_DashTimer_timeout"]

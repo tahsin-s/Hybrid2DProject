@@ -2,9 +2,9 @@ extends KinematicBody
 
 onready var aniP = $SpriteAnimation
 onready var dash_timer = $DashTimer
-onready var sword_hitbox = $SpriteAnimation/Sword_HitBox
+onready var sword_hitbox = $SpriteAnimation/SwordHitbox
 
-export var speed = 173
+export var accel = 173
 export var fall_acceleration = 156
 export var jump_impulse = 40
 export var dash_impulse = 48
@@ -13,15 +13,18 @@ export var min_speed = 0.05
 export var frict = 15
 export var hangtime = 0.2
 export var time_dash = 0.1
-export var STEP_UP_HEIGHT = 0.5
+export var STEP_UP_HEIGHT: float = 1
 
-var ani_thres = 0.25
+var hp: int = 3
+var ani_thres = 0.5
 var velocity = Vector3.ZERO
 var snap = Vector3.DOWN
 var dash_ready = false
 var direction = Vector3.ZERO
 var d_last = Vector3.ZERO
 var anim_state = "walking"
+
+onready var max_speed: float = accel/frict
 
 ## Movement
 func dash():
@@ -54,9 +57,38 @@ func fall():
 		velocity.y = velocity.y*jump_release
 
 func attack():
-	anim("attack")
+	anim_state = "attack"
 	velocity += d_last*dash_impulse*0.2
+
+func take_damage():
+	var hearts = $Hearts.get_children()
+	var l = len(hearts)
+	if l > 0:
+		hearts[l-1].queue_free()
+	if len(hearts) == 0:
+		get_tree().change_scene("res://Game Over Screen.tscn")
+
+func step(delta):
+	var pos: Transform = get_transform()
+	#predict translation 1 frame ahead of step
+	var approach = 2*max_speed*direction*delta 
 	
+	var forth = test_move(pos,approach)
+	pos[3].y += STEP_UP_HEIGHT
+	var step_up = test_move(pos,approach)
+
+	#binary search for what approximate height to move to
+	if forth and not step_up:
+		pos[3].y -= STEP_UP_HEIGHT*0.5
+		step_up = test_move(pos,approach)
+		pos[3].y += STEP_UP_HEIGHT*(int(step_up)*0.5 - 0.25)
+		step_up = test_move(pos,approach)
+		pos[3].y += STEP_UP_HEIGHT*(int(step_up)*0.25 - 0.125)
+		step_up = test_move(pos,approach)
+		pos[3].y += STEP_UP_HEIGHT*(int(step_up)*0.125 - 0.0625)
+		set_transform(pos)
+		velocity = max_speed*direction*1.5
+
 func _input(event): #input polling
 	#print(moves)
 	#jump cases
@@ -70,17 +102,6 @@ func _input(event): #input polling
 		dash()
 	if event.is_action_pressed("attack"):
 		attack()
-	
-
-## Stepping functions
-func lift(var dir,delta):
-	#if the bottom hitbox is shorter than what is being collided with,
-	#lift the player the height of the collided
-	var step_up = move_and_collide((Vector3.UP) * STEP_UP_HEIGHT+dir, false, true, true)
-	var go_forth = move_and_collide(direction, false, true, true)
-	if go_forth and not step_up:
-		snap = Vector3.ZERO
-		velocity += 2*fall_acceleration*Vector3.UP*delta
 
 ## Animation
 func anim(var s: String):
@@ -103,12 +124,12 @@ func anim_walk():
 	else:
 		aniP.play("walk")
 		
-	var vNorm: Vector3 = velocity.normalized()
-	
-	if vNorm.x > ani_thres:
-		aniP.flip_h = 0
-	elif vNorm.x < -ani_thres:
-		aniP.flip_h = 1
+	if direction.x > 0:
+			#aniP.flip_h = 0
+			rotation_degrees.y = 0
+	elif direction.x < 0:
+			rotation_degrees.y = 180
+			#aniP.flip_h = 1
 
 func _on_SpriteAnimation_animation_finished():
 	match anim_state:
@@ -118,33 +139,56 @@ func _on_SpriteAnimation_animation_finished():
 
 ## Main
 func _ready():
+	#animation initialization
+	anim(anim_state)
+	#dash
 	dash_timer.process_mode = Timer.TIMER_PROCESS_PHYSICS
 	dash_timer.wait_time = time_dash
+	
+	#health
+	var hearts = $Hearts
+	for i in range(hp):
+		hearts.add_child(load("res://Heart.tscn").instance())
+		var heart = hearts.get_child(i)
+		
+		heart.position.x = (1+i)*40
+		heart.position.y = (50)
 
 func _physics_process(delta):
 	# We check for each move input and update the direction accordingly.
-	direction.x = int(Input.is_action_pressed("move_right")) - int(Input.is_action_pressed("move_left"))
-	direction.z = int(Input.is_action_pressed("move_down")) - int(Input.is_action_pressed("move_up"))
+	
+	# Note: Seems to take the same time for using the direct method and 
+	# the vector3 method
+	direction = Vector3(
+		+ int(Input.is_action_pressed("move_right")) 
+		- int(Input.is_action_pressed("move_left")),
+		0,
+		+ int(Input.is_action_pressed("move_down")) 
+		- int(Input.is_action_pressed("move_up"))
+	)
 	
 	if direction != Vector3.ZERO:
 		direction = direction.normalized()
+		d_last = direction
+		step(delta)
 	
 	anim(anim_state)
 	
-	velocity.y -= fall_acceleration * delta 
-	velocity.x += (direction.x * speed - velocity.x  * frict) * delta 
-	velocity.z += (direction.z * speed - velocity.z  * frict) * delta 
+	velocity += Vector3(
+		+ direction.x * accel - velocity.x  * frict,
+		- fall_acceleration,
+		+ direction.z * accel - velocity.z  * frict
+	) * delta
 	
 	velocity = move_and_slide(velocity, Vector3.UP)
-	
-	lift(direction,delta)
+	print(velocity.length())
 	
 	if is_on_floor(): 
 		snap = Vector3.DOWN #return snapping
 		dash_ready = dash_timer.is_stopped() #recover dash after timer
 	
-	elif global_translation.y < -80: #OoB
-		get_tree().change_scene("res://Game Over Screen.tscn")
-	
-	if direction != Vector3.ZERO:
-		d_last = direction
+	if global_translation.y < -80: #OoB
+		var err = get_tree().change_scene("res://Game Over Screen.tscn")
+		
+		if err: 
+			print("what")
